@@ -1,0 +1,26 @@
+{
+  "name": "sos-mulheres-monorepo",
+  "version": "1.0.0",
+  "description": "Plataforma PWA de Proteção e Monitoramento 190 (COPOM) - Enterprise Clean Architecture",
+  "private": true,
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "start:backend": "npm --prefix backend run start",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "keywords": [
+    "sos-mulheres",
+    "pwa",
+    "postgis",
+    "neon-serverless",
+    "clean-architecture",
+    "copom-190"
+  ],
+  "author": "Equipe SOS Mulheres",
+  "license": "MIT"
+}

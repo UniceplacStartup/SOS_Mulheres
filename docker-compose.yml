@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Banco de Dados Local com PostGIS (opcional para testes locais sem Neon.tech)
+  postgres:
+    image: postgis/postgis:15-3.3-alpine
+    container_name: sos_mulheres_postgis
+    environment:
+      POSTGRES_USER: sos_admin
+      POSTGRES_PASSWORD: sos_secure_password_2026
+      POSTGRES_DB: sos_mulheres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/neon_postgis_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sos_admin -d sos_mulheres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Clean Architecture
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sos_mulheres_backend
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://sos_admin:sos_secure_password_2026@postgres:5432/sos_mulheres
+      SMS_PROVIDER: SANDBOX
+      COPOM_CAD_WEBHOOK_URL: https://sandbox.seguranca.gov.br/api/v1/cad-190
+      CORS_ORIGIN: "*"
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Frontend Mobile PWA + COPOM
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sos_mulheres_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
